@@ -63,6 +63,7 @@ try:
     subprocess.run(["git add --all"], shell=True, cwd="/tmp/submit")
     subprocess.run(["git commit --allow-empty-message -m ''"],
                    shell=True, cwd="/tmp/submit")
+
 except GithubException as e:
     # Github repo creation. Should be done only if it does not exist
     repo = org.create_repo(
@@ -77,6 +78,7 @@ except GithubException as e:
     )
     # Start git on temporary folder
     subprocess.run(["git init"], shell=True, cwd="/tmp/submit")
+    subprocess.run(["cp", fileName, "/tmp/submit"])
     subprocess.run(["git add --all"], shell=True, cwd="/tmp/submit")
     subprocess.run(["git commit --allow-empty-message -m ''"],
                    shell=True, cwd="/tmp/submit")
