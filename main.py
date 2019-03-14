@@ -50,11 +50,16 @@ repo = None
 # TODO: Verify if user is in the org
 
 try:
+    # Get the repo, if it does not exists this will fail and go to except
     repo = org.get_repo(user.login)
+    # Get the remote repo
     subprocess.run(
         [f"git clone {repo.clone_url} ."], shell=True, cwd="/tmp/submit")
+    # Remove everything from it
     subprocess.run(["rm -r /tmp/submit/*"], shell=True)
+    # Copy selected file
     subprocess.run(["cp", fileName, "/tmp/submit"])
+    # Commit everything
     subprocess.run(["git add --all"], shell=True, cwd="/tmp/submit")
     subprocess.run(["git commit --allow-empty-message -m ''"],
                    shell=True, cwd="/tmp/submit")
@@ -76,7 +81,7 @@ except GithubException as e:
     subprocess.run(["git commit --allow-empty-message -m ''"],
                    shell=True, cwd="/tmp/submit")
 
-# Push all content to github. Only for freshly created repos
+# Push all content to github.
 subprocess.run(
     [f"git push -u https://{username}:{password}@github.com/tomsk-submit/{username}.git master"],
     shell=True,
