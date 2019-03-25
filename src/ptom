@@ -1,7 +1,4 @@
-#
-#
-#
-#
+#!/usr/bin/env python3
 
 import sys
 import subprocess
@@ -22,6 +19,9 @@ fileName = sys.argv[1]
 
 # Check if file exists
 if not os.path.isfile(fileName):
+    print(os.listdir(os.getcwd()))
+    print(os.getcwd())
+    print(fileName)
     print('Could not find file')
     sys.exit(1)
 
@@ -59,6 +59,10 @@ try:
     subprocess.run(["rm -r /tmp/submit/*"], shell=True)
     # Copy selected file
     subprocess.run(["cp", fileName, "/tmp/submit"])
+    subprocess.run(
+        [f"git config user.email {user.email}"], shell=True, cwd="/tmp/submit")
+    subprocess.run(
+        [f"git config user.name {user.name}"], shell=True, cwd="/tmp/submit")
     # Commit everything
     subprocess.run(["git add --all"], shell=True, cwd="/tmp/submit")
     subprocess.run(["git commit --allow-empty-message -m ''"],
@@ -79,6 +83,10 @@ except GithubException as e:
     # Start git on temporary folder
     subprocess.run(["git init"], shell=True, cwd="/tmp/submit")
     subprocess.run(["cp", fileName, "/tmp/submit"])
+    subprocess.run(
+        [f"git config user.email {user.email}"], shell=True, cwd="/tmp/submit")
+    subprocess.run(
+        [f"git config user.name {user.name}"], shell=True, cwd="/tmp/submit")
     subprocess.run(["git add --all"], shell=True, cwd="/tmp/submit")
     subprocess.run(["git commit --allow-empty-message -m ''"],
                    shell=True, cwd="/tmp/submit")
