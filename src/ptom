@@ -4,38 +4,39 @@ import sys
 import subprocess
 import os
 import getpass
+import glob
 from github import Github
 from github import GithubException
 
 # Check if an arg was passed
 if not len(sys.argv) > 1:
-    print('No file specified.')
+    print('No exercise specified.')
     sys.exit(1)
 
 # TODO: Check if git is installed
 
 # Get file name
-fileName = sys.argv[1]
+branchName = sys.argv[1]
 
-# Check if file exists
-if not os.path.isfile(fileName):
-    print(os.listdir(os.getcwd()))
-    print(os.getcwd())
-    print(fileName)
-    print('Could not find file')
-    sys.exit(1)
+listOfFiles = glob.glob('*')
+
+s = '\n'
+
+for f in listOfFiles:
+    s += f + '\n'
 
 # Get confirmation for the process
-answer = input('Would you like to upload ' + fileName + '? (y/n) ')
+answer = input('Would you like to upload this files?: ' + s+'(y/n)')
+
 if answer == 'n':
     print('Exiting...')
     sys.exit(1)
 
 # TODO: extract temprary folder path to variable
+TEMP_DIR = "/tmp/submit"
 
 # Setup temporary folder
-subprocess.run(["mkdir", "/tmp/submit"])
-
+subprocess.run(["mkdir", TEMP_DIR])
 # Get user credentials
 username = input('Github username: ')
 password = getpass.getpass()
@@ -54,19 +55,19 @@ try:
     repo = org.get_repo(user.login)
     # Get the remote repo
     subprocess.run(
-        [f"git clone {repo.clone_url} ."], shell=True, cwd="/tmp/submit")
+        [f"git clone {repo.clone_url} ."], shell=True, cwd=TEMP_DIR)
     # Remove everything from it
     subprocess.run(["rm -r /tmp/submit/*"], shell=True)
     # Copy selected file
-    subprocess.run(["cp", fileName, "/tmp/submit"])
+    subprocess.run(f"cp -r {os.getcwd()}/* {TEMP_DIR}", shell=True)
     subprocess.run(
-        [f"git config user.email {user.email}"], shell=True, cwd="/tmp/submit")
+        [f"git config user.email {user.email}"], shell=True, cwd=TEMP_DIR)
     subprocess.run(
-        [f"git config user.name {user.name}"], shell=True, cwd="/tmp/submit")
+        [f"git config user.name {user.name}"], shell=True, cwd=TEMP_DIR)
     # Commit everything
-    subprocess.run(["git add --all"], shell=True, cwd="/tmp/submit")
+    subprocess.run(["git add --all"], shell=True, cwd=TEMP_DIR)
     subprocess.run(["git commit --allow-empty-message -m ''"],
-                   shell=True, cwd="/tmp/submit")
+                   shell=True, cwd=TEMP_DIR)
 
 except GithubException as e:
     # Github repo creation. Should be done only if it does not exist
@@ -81,21 +82,21 @@ except GithubException as e:
         private=False,
     )
     # Start git on temporary folder
-    subprocess.run(["git init"], shell=True, cwd="/tmp/submit")
-    subprocess.run(["cp", fileName, "/tmp/submit"])
+    subprocess.run(["git init"], shell=True, cwd=TEMP_DIR)
+    subprocess.run(["cp -r", os.getcwd(), TEMP_DIR])
     subprocess.run(
-        [f"git config user.email {user.email}"], shell=True, cwd="/tmp/submit")
+        [f"git config user.email {user.email}"], shell=True, cwd=TEMP_DIR)
     subprocess.run(
-        [f"git config user.name {user.name}"], shell=True, cwd="/tmp/submit")
-    subprocess.run(["git add --all"], shell=True, cwd="/tmp/submit")
+        [f"git config user.name {user.name}"], shell=True, cwd=TEMP_DIR)
+    subprocess.run(["git add --all"], shell=True, cwd=TEMP_DIR)
     subprocess.run(["git commit --allow-empty-message -m ''"],
-                   shell=True, cwd="/tmp/submit")
+                   shell=True, cwd=TEMP_DIR)
 
 # Push all content to github.
 subprocess.run(
-    [f"git push -u https://{username}:{password}@github.com/tomsk-submit/{username}.git master"],
+    [f"git push -u https://{username}:{password}@github.com/tomsk-submit/{username}.git master:{branchName}"],
     shell=True,
-    cwd="/tmp/submit", stdout=subprocess.DEVNULL)
+    cwd=TEMP_DIR, stdout=subprocess.DEVNULL)
 
 # Clean temporary folder
-subprocess.run(["rm", "-rf", "/tmp/submit"])
+subprocess.run(["rm", "-rf", TEMP_DIR])
